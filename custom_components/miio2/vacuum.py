@@ -142,12 +142,12 @@ SUPPORT_XIAOMI = (
 
 
 STATE_CODE_TO_STATE = {
-    0: STATE_IDLE,
-    1: STATE_IDLE,
-    2: STATE_PAUSED,
-    3: STATE_CLEANING,
-    4: STATE_RETURNING,
-    5: STATE_DOCKED,
+    0: STATE_IDLE,      # Sleep
+    1: STATE_IDLE,      # Idle
+    2: STATE_PAUSED,    # Paused
+    3: STATE_RETURNING, # Go Charging
+    4: STATE_DOCKED,    # Charging
+    5: STATE_CLEANING,  # Vacuum
     6: STATE_CLEANING,  # Vacuum & Mop
     7: STATE_CLEANING   # Mop only
 }
@@ -167,22 +167,32 @@ ALL_PROPS = [
     "has_map",
     "is_mop",
     "has_newmap",
-    "hw_info",
-    "sw_info",
-    "start_time",
-    "order_time",
-    "v_state",
-    "zone_data",
+    "main_brush_percentage",
+    "main_brush_left",
+    "side_brush_percentage",
+    "side_brush_left",
+    "filter_percentage",
+    "filter_left",
+    "mop_percentage",
+    "mop_left",
     "repeat_state",
-    "light_state",
-    "is_charge",
-    "is_work"
+    "mop_route"
+    # "hw_info",
+    # "sw_info",
+    # "start_time",
+    # "order_time",
+    # "v_state",
+    # "zone_data",
+    # "repeat_state",
+    # "light_state",
+    # "is_charge",
+    # "is_work"
 ]
 
-VACUUM_CARD_PROPS_REFERENCES = {
-    'cleaned_area': 's_area',
-    'cleaning_time': 's_time'
-}
+# VACUUM_CARD_PROPS_REFERENCES = {
+#     'cleaned_area': 's_area',
+#     'cleaning_time': 's_time'
+# }
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the Xiaomi vacuum cleaner robot platform."""
@@ -436,12 +446,45 @@ class MiroboVacuum2(StateVacuumEntity):
     def update(self):
         """Fetch state from the device."""
         try:
-            state = self._vacuum.raw_command('get_prop', ALL_PROPS)
+            # state = self._vacuum.raw_command('get_prop', ALL_PROPS)
+            mapping = [
+                {"did":"run_state","siid":2,"piid":1},
+                {"did":"mode","siid":2,"piid":18},
+                {"did":"err_state","siid":2,"piid":2},
+                {"did":"battery_life","siid":3,"piid":1},
+                {"did":"box_type","siid":2,"piid":12},
+                {"did":"mop_type","siid":2,"piid":13},
+                {"did":"s_time","siid":2,"piid":15},
+                {"did":"s_area","siid":2,"piid":16},
+                {"did":"suction_grade","siid":2,"piid":19},
+                {"did":"water_grade","siid":4,"piid":18,},
+                {"did":"remember_map","siid":4,"piid":3},
+                {"did":"has_map","siid":4,"piid":4},
+                {"did":"is_mop","siid":2,"piid":11},
+                {"did":"has_newmap","siid":4,"piid":5},
+                {"did":"main_brush_left_percentage","siid":4,"piid":10},
+                {"did":"main_brush","siid":4,"piid":11,},
+                {"did":"side_brush_left_percentage","siid":4,"piid":8},
+                {"did":"side_brush_left","siid":4,"piid":9},
+                {"did":"filter_left_percentage","siid":4,"piid":12},
+                {"did":"filter_left","siid":4,"piid":13},
+                {"did":"mop_left_percentage","siid":4,"piid":14},
+                {"did":"mop_left","siid":4,"piid":15},
+                {"did":"repeat_state","siid":4,"piid":1},
+                {"did":"mop_route","siid":4,"piid":6}
+                ]
+
+            properties = self._vacuum.raw_command('get_properties', mapping[:12])
+            properties.extend(self._vacuum.raw_command('get_properties', mapping[12:]))
+
+            state = []
+            for d in properties:
+                state.append(d['value'])
 
             self.vacuum_state = dict(zip(ALL_PROPS, state))
 
-            for prop in VACUUM_CARD_PROPS_REFERENCES.keys():
-                self.vacuum_state[prop] = self.vacuum_state[VACUUM_CARD_PROPS_REFERENCES[prop]]
+            # for prop in VACUUM_CARD_PROPS_REFERENCES.keys():
+            #     self.vacuum_state[prop] = self.vacuum_state[VACUUM_CARD_PROPS_REFERENCES[prop]]
 
             self._available = True
 

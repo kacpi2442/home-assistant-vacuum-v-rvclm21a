@@ -1,14 +1,14 @@
 {
   "domain": "miio2",
-  "name": "Xiaomi miio vacuum STYJ02YM",
+  "name": "Xiaomi miio vacuum V-RVCLM21A",
   "version": "2021.8.0",
-  "documentation": "https://github.com/KrzysztofHajdamowicz/home-assistant-vacuum-styj02ym",
+  "documentation": "https://github.com/kacpi2442/home-assistant-vacuum-v-rvclm21a",
   "requirements": [
     "construct==2.10.56",
     "python-miio==0.5.8"
   ],
   "dependencies": [],
-  "codeowners": ["@nqkdev", "@KrzysztofHajdamowicz"],
+  "codeowners": ["@nqkdev", "@KrzysztofHajdamowicz", "@kacpi2442", "@marotoweb"],
   "config_flow": false,
   "iot_class": "local_polling"
 }
